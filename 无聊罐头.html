@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="description" content="无聊罐头 —— 一罐子里装了九个无聊到治愈的小玩意。禁止上进，只收发呆的。">
+<title>无聊罐头 · Can of Boredom</title>
+<style>
+  /* ============ 主题变量 ============ */
+  :root{
+    --bg:#FBF7F0; --card:#FFFFFF; --ink:#4A403A; --sub:#9B8F85;
+    --accent:#F2A65A; --accent-deep:#E08B3A; --accent2:#A8C8A0;
+    --line:#EFE7DC; --shadow:0 10px 30px rgba(120,100,80,.10);
+    --radius:22px;
+  }
+  html.dark{
+    --bg:#26221F; --card:#332E29; --ink:#EDE4D8; --sub:#9A8F84;
+    --accent:#E8A15C; --accent-deep:#D98F45; --accent2:#8FBA88;
+    --line:#443C35; --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Source Han Sans SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:background .5s ease,color .5s ease;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--accent);color:#fff;}
+
+  /* ============ 顶部导航 ============ */
+  nav{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;gap:10px;
+    padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-logo{font-weight:800;font-size:16px;letter-spacing:1px;display:flex;align-items:center;gap:6px;flex-shrink:0;white-space:nowrap;}
+  .nav-score{
+    margin-left:auto;font-size:12px;color:var(--sub);
+    background:var(--card);border:1px solid var(--line);border-radius:999px;
+    padding:4px 10px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  }
+  .nav-score b{color:var(--accent-deep);font-size:14px;transition:transform .15s;}
+  .nav-score b.bump{transform:scale(1.35);}
+  .icon-btn{
+    width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+    background:var(--card);font-size:15px;cursor:pointer;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s;
+  }
+  .icon-btn:active{transform:scale(.85);}
+
+  /* ============ 货架 ============ */
+  .shelf{
+    display:flex;gap:10px;overflow-x:auto;padding:14px 16px 4px;
+    scrollbar-width:none;
+  }
+  .shelf::-webkit-scrollbar{display:none;}
+  .shelf a{
+    flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;
+    text-decoration:none;color:var(--ink);font-size:11px;
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:10px 12px;min-width:64px;
+    transition:transform .2s cubic-bezier(.22,1,.36,1);
+  }
+  .shelf a:active{transform:scale(.92) translateY(2px);}
+  .shelf a span{font-size:24px;}
+
+  /* ============ 通用区块 ============ */
+  section{
+    max-width:560px;margin:0 auto;padding:56px 20px 72px;
+    min-height:86vh;display:flex;flex-direction:column;
+    scroll-margin-top:72px;
+    opacity:0;transform:translateY(24px) scale(.985);
+    transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1);
+  }
+  section.in{opacity:1;transform:none;}
+  .sec-tag{font-size:12px;color:var(--sub);letter-spacing:3px;margin-bottom:6px;}
+  .sec-title{font-size:26px;font-weight:800;margin-bottom:6px;}
+  .sec-sub{font-size:14px;color:var(--sub);margin-bottom:26px;line-height:1.8;}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px;
+  }
+  .stage{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:300px;user-select:none;-webkit-user-select:none;
+  }
+  .hint{font-size:12px;color:var(--sub);text-align:center;margin-top:18px;line-height:1.9;}
+  .soft-btn{
+    border:none;cursor:pointer;font-family:inherit;
+    background:var(--accent);color:#fff;font-weight:700;font-size:15px;
+    padding:12px 26px;border-radius:999px;
+    box-shadow:0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent);
+    transition:transform .15s cubic-bezier(.22,1,.36,1),filter .2s;
+  }
+  .soft-btn:active{transform:scale(.92);}
+  .soft-btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:none;}
+  .counter-num{font-size:44px;font-weight:800;color:var(--accent-deep);font-variant-numeric:tabular-nums;}
+
+  /* toast */
+  #toast{
+    position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--bg);font-size:13px;line-height:1.6;
+    padding:12px 20px;border-radius:16px;max-width:80vw;text-align:center;
+    opacity:0;pointer-events:none;z-index:99;
+    transition:opacity .35s,transform .35s cubic-bezier(.22,1,.36,1);
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ============ 封面罐头 ============ */
+  #hero{justify-content:center;min-height:100vh;padding-top:80px;}
+  .can{
+    width:250px;margin:0 auto 30px;position:relative;
+    filter:drop-shadow(0 16px 24px rgba(120,90,60,.25));
+    animation:canFloat 4.5s ease-in-out infinite;
+  }
+  @keyframes canFloat{0%,100%{transform:translateY(0) rotate(-1.5deg);}50%{transform:translateY(-10px) rotate(1.5deg);}}
+  .can-body{
+    width:250px;height:300px;border-radius:26px;position:relative;overflow:hidden;
+    background:linear-gradient(160deg,#FFD9A8 0%,#F2A65A 55%,#E08B3A 100%);
+  }
+  .can-body::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:30px;
+    background:#E7E2D9;border-radius:26px 26px 4px 4px;
+    background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 2px,transparent 2px 8px);
+  }
+  .can-label{
+    position:absolute;left:14px;right:14px;top:52px;bottom:24px;
+    background:#FFFCF5;border-radius:14px;padding:16px 14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    color:#4A403A;text-align:center;
+  }
+  .can-label .cn{font-size:26px;font-weight:900;letter-spacing:4px;}
+  .can-label .en{font-size:9px;letter-spacing:2.5px;color:#B7A894;}
+  .can-label .divider{width:60%;height:1px;background:#EFE2CC;margin:6px 0;}
+  .can-label .meta{font-size:9.5px;color:#8C7F70;line-height:2;}
+  .hero-slogan{
+    text-align:center;font-size:15px;line-height:2.1;color:var(--sub);
+    margin-bottom:34px;
+  }
+  .hero-slogan b{color:var(--ink);}
+  .scroll-tip{text-align:center;font-size:12px;color:var(--sub);animation:bob 2s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+
+  /* ============ 木鱼 ============ */
+  .woodfish{
+    width:190px;height:190px;border-radius:50%;cursor:pointer;position:relative;
+    background:radial-gradient(circle at 35% 30%, #8A5A3B, #5E3A22 70%);
+    box-shadow:inset 0 -14px 24px rgba(0,0,0,.35), 0 16px 30px rgba(94,58,34,.35);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .08s;
+  }
+  .woodfish:active{transform:scale(.93);}
+  .woodfish.hit{animation:wfish .18s;}
+  @keyframes wfish{0%{transform:scale(1);}40%{transform:scale(.9) rotate(-2deg);}100%{transform:scale(1);}}
+  .woodfish::after{
+    content:"";position:absolute;width:64px;height:26px;border-radius:50%;
+    background:radial-gradient(circle at 50% 35%, #3E2414, #2B180C);
+    top:34%;left:50%;transform:translateX(-50%);
+  }
+  .merit-fly{
+    position:absolute;font-size:20px;font-weight:800;color:var(--accent-deep);
+    pointer-events:none;animation:flyUp 1s ease-out forwards;z-index:5;
+  }
+  @keyframes flyUp{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-90px) scale(1.4);}}
+
+  /* ============ 泡泡纸 ============ */
+  .bubble-grid{
+    display:grid;grid-template-columns:repeat(6,1fr);gap:9px;
+    touch-action:none;padding:6px;
+  }
+  .bubble{
+    aspect-ratio:1;border-radius:50%;cursor:pointer;position:relative;
+    background:radial-gradient(circle at 32% 28%, #FFFFFF 0%, #DCEBF5 45%, #B8D4E8 100%);
+    box-shadow:inset -3px -5px 8px rgba(90,130,160,.35), inset 3px 4px 6px rgba(255,255,255,.9), 0 2px 4px rgba(90,130,160,.15);
+    transition:transform .12s;
+  }
+  html.dark .bubble{background:radial-gradient(circle at 32% 28%, #55606B 0%, #3C4650 45%, #2E3740 100%);box-shadow:inset -3px -5px 8px rgba(0,0,0,.4), inset 3px 4px 6px rgba(255,255,255,.12);}
+  .bubble:not(.popped):active{transform:scale(.85);}
+  .bubble.popped{
+    background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);
+    transform:scale(.86);cursor:default;
+  }
+  .bubble.popped::after{content:"";position:absolute;inset:32%;border-radius:50%;background:var(--line);opacity:.6;}
+
+  /* ============ 石头 ============ */
+  .stone{
+    width:150px;height:110px;cursor:pointer;position:relative;
+    border-radius:48% 52% 55% 45% / 60% 58% 42% 40%;
+    background:radial-gradient(circle at 35% 28%, #B9B3AB, #8A847C 65%, #6F6A62);
+    box-shadow:inset 4px 6px 10px rgba(255,255,255,.35), inset -6px -8px 14px rgba(0,0,0,.25), 0 12px 24px rgba(90,85,75,.3);
+    transition:transform .12s;
+  }
+  .stone:active{transform:scale(.94) rotate(1deg);}
+  .stone .face{position:absolute;top:38%;left:50%;transform:translateX(-50%);font-size:15px;letter-spacing:12px;padding-left:12px;opacity:.55;}
+  .stone-talk{
+    margin-top:22px;font-size:14px;line-height:2;color:var(--sub);text-align:center;min-height:56px;
+  }
+  .stone-name{margin-top:6px;font-size:16px;font-weight:800;text-align:center;cursor:pointer;border-bottom:1.5px dashed var(--sub);display:inline-block;padding:0 4px 2px;}
+  .stone-rename{display:none;width:120px;font-size:14px;text-align:center;border:none;border-bottom:1.5px solid var(--accent);background:transparent;color:var(--ink);padding:2px 4px;outline:none;font-family:inherit;}
+  .stone-rename.on{display:inline-block;}
+
+  /* ============ 雨窗 ============ */
+  .rain-wrap{position:relative;width:100%;border-radius:18px;overflow:hidden;cursor:crosshair;}
+  #rainCanvas{display:block;width:100%;border-radius:18px;touch-action:none;}
+  .rain-ctrl{display:flex;align-items:center;gap:12px;margin-top:14px;justify-content:center;}
+  .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px;}
+  .seg button{
+    border:none;background:transparent;color:var(--sub);font-family:inherit;font-size:12px;
+    padding:6px 16px;border-radius:999px;cursor:pointer;font-weight:600;
+  }
+  .seg button.on{background:var(--accent);color:#fff;}
+
+  /* ============ 戳这里 ============ */
+  .poke-btn{
+    width:190px;height:190px;border-radius:50%;border:none;cursor:pointer;
+    font-family:inherit;font-size:20px;font-weight:800;color:#fff;
+    background:radial-gradient(circle at 35% 30%, #FFB77E, var(--accent) 60%, var(--accent-deep));
+    box-shadow:0 14px 30px color-mix(in srgb, var(--accent) 50%, transparent), inset 0 -8px 14px rgba(0,0,0,.12);
+    transition:transform .12s,filter .3s;
+  }
+  .poke-btn:active{transform:scale(.9);}
+  .poke-btn.dead{filter:grayscale(.75) brightness(.92);}
+  .poke-log{margin-top:24px;font-size:15px;color:var(--sub);min-height:24px;text-align:center;}
+
+  /* ============ 泡面 ============ */
+  .bowl{
+    width:170px;height:120px;position:relative;margin-bottom:8px;
+    border-radius:0 0 85px 85px / 0 0 90px 90px;overflow:hidden;
+    background:linear-gradient(180deg,#FF8A65 0%,#E85D3D 100%);
+    box-shadow:0 14px 26px rgba(200,80,50,.28);
+  }
+  .bowl::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:26px;
+    background:repeating-linear-gradient(90deg,#FFFCF5 0 14px,#F2A65A 14px 28px);
+    border-bottom:3px solid rgba(0,0,0,.06);
+  }
+  .bowl .steam{position:absolute;top:-6px;left:50%;transform:translateX(-50%);display:flex;gap:12px;}
+  .bowl .steam i{
+    display:block;width:8px;height:34px;border-radius:8px;
+    background:linear-gradient(180deg,rgba(255,255,255,.85),transparent);
+    animation:steam 2.2s ease-in-out infinite;opacity:0;
+  }
+  .bowl .steam i:nth-child(2){animation-delay:.7s;height:44px;}
+  .bowl .steam i:nth-child(3){animation-delay:1.3s;}
+  .bowl.steaming .steam i{opacity:1;}
+  @keyframes steam{0%{transform:translateY(10px) scaleY(.4);opacity:0;}40%{opacity:.9;}100%{transform:translateY(-34px) scaleY(1.1);opacity:0;}}
+  .noodle-status{font-size:15px;color:var(--sub);text-align:center;min-height:52px;line-height:1.9;margin-top:10px;}
+  .noodle-timer{font-size:40px;font-weight:800;color:var(--accent-deep);font-variant-numeric:tabular-nums;margin:4px 0 10px;}
+
+  /* ============ 摇摇车 ============ */
+  .kiddy-stage{position:relative;width:100%;display:flex;justify-content:center;padding:10px 0;}
+  .kiddy{
+    width:220px;transform-origin:50% 92%;
+    transition:filter .3s;
+  }
+  .kiddy.rocking{animation:rock .62s ease-in-out infinite;}
+  @keyframes rock{0%,100%{transform:rotate(-7deg);}50%{transform:rotate(7deg);}}
+  .coin-slot{
+    width:52px;height:62px;margin:0 auto;border-radius:10px;position:relative;
+    background:var(--card);border:1px solid var(--line);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    font-size:10px;color:var(--sub);
+    transition:transform .15s;
+  }
+  .coin-slot:active{transform:scale(.9);}
+  .coin-slot .slit{width:5px;height:22px;border-radius:3px;background:var(--ink);opacity:.75;}
+  .coin{
+    position:absolute;width:26px;height:26px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#FFE9B8,#E8B84B 70%);
+    box-shadow:0 3px 6px rgba(0,0,0,.25);left:50%;top:-30px;
+    transform:translateX(-50%);opacity:0;pointer-events:none;
+  }
+  .coin.drop{animation:coinDrop .6s ease-in forwards;}
+  @keyframes coinDrop{0%{opacity:1;top:-34px;transform:translateX(-50%) rotate(0);}100%{opacity:1;top:18px;transform:translateX(-50%) rotate(220deg) scale(.6);}}
+
+  /* ============ 刷毛毛 ============ */
+  .brush-wrap{position:relative;width:100%;}
+  #brushCanvas{display:block;width:100%;border-radius:18px;touch-action:none;cursor:grab;}
+  .brush-bar{height:8px;border-radius:8px;background:var(--line);margin-top:16px;overflow:hidden;}
+  .brush-bar i{display:block;height:100%;width:0%;background:var(--accent2);border-radius:8px;transition:width .2s;}
+
+  /* ============ 收音机 ============ */
+  .radio{
+    background:linear-gradient(165deg,#7A6A5C,#5C4F44);border-radius:22px;
+    padding:22px;color:#F5EEE2;box-shadow:0 16px 34px rgba(70,55,40,.35);
+    position:relative;overflow:hidden;
+  }
+  html.dark .radio{background:linear-gradient(165deg,#4A413A,#332C26);}
+  .radio-screen{
+    background:#2E2A22;border-radius:14px;min-height:110px;padding:18px 16px;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    font-size:15px;line-height:2;color:#F0E6D2;
+    box-shadow:inset 0 3px 10px rgba(0,0,0,.5);
+    position:relative;
+  }
+  .radio-screen::after{
+    content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px);
+  }
+  .radio-knob-row{display:flex;align-items:center;justify-content:space-between;margin-top:18px;}
+  .radio-knob{
+    width:52px;height:52px;border-radius:50%;cursor:pointer;
+    background:radial-gradient(circle at 35% 30%,#B7A894,#87796A 70%);
+    box-shadow:inset 0 3px 6px rgba(255,255,255,.3), inset 0 -4px 8px rgba(0,0,0,.35), 0 4px 8px rgba(0,0,0,.3);
+    transition:transform .3s cubic-bezier(.22,1,.36,1);
+    position:relative;
+  }
+  .radio-knob::after{content:"";position:absolute;top:6px;left:50%;width:4px;height:12px;border-radius:3px;background:#4A403A;transform:translateX(-50%);}
+  .radio-freq{font-size:11px;letter-spacing:2px;color:#C9BCA6;}
+
+  /* ============ 成就墙 ============ */
+  .rules{
+    background:var(--card);border:1.5px dashed var(--accent);border-radius:var(--radius);
+    padding:22px;line-height:2.4;font-size:14.5px;margin-bottom:26px;
+  }
+  .rules b{color:var(--accent-deep);}
+  .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;}
+  .badge{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:14px 8px;text-align:center;filter:grayscale(1);opacity:.42;
+    transition:all .5s cubic-bezier(.22,1,.36,1);
+  }
+  .badge.on{filter:none;opacity:1;border-color:var(--accent);box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 22%,transparent);transform:translateY(-2px);}
+  .badge .em{font-size:28px;display:block;margin-bottom:6px;}
+  .badge .nm{font-size:11.5px;font-weight:700;}
+  .badge .ds{font-size:10px;color:var(--sub);margin-top:3px;line-height:1.6;}
+  .progress-track{height:10px;border-radius:8px;background:var(--line);overflow:hidden;margin:6px 0 22px;}
+  .progress-track i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:8px;transition:width .6s cubic-bezier(.22,1,.36,1);}
+
+  footer{
+    max-width:560px;margin:0 auto;padding:0 20px calc(env(safe-area-inset-bottom) + 60px);
+    text-align:center;color:var(--sub);font-size:12px;line-height:2.2;
+  }
+  footer .paw{font-size:20px;margin-bottom:8px;}
+
+  /* 小屏适配 */
+  @media (max-width:380px){ .sec-title{font-size:23px;} section{padding:48px 16px 60px;} .nav-logo{font-size:14px;} .nav-score{font-size:11px;padding:4px 8px;} nav{gap:8px;padding-left:10px;padding-right:10px;} }
+  @media (max-width:360px){
+    nav{gap:6px;padding-left:10px;padding-right:10px;}
+    .nav-logo{font-size:13px;}
+    .nav-score{font-size:11px;padding:3px 8px;}
+    .icon-btn{width:30px;height:30px;font-size:13px;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🥫 无聊罐头</div>
+  <div class="nav-score">无聊值 <b id="scoreNum">0</b></div>
+  <button class="icon-btn" id="soundBtn" title="音效开关">🔊</button>
+  <button class="icon-btn" id="darkBtn" title="被窝模式">🌙</button>
+</nav>
+
+<div class="shelf" id="shelf">
+  <a href="#woodfish"><span>🪵</span>木鱼</a>
+  <a href="#bubble"><span>🫧</span>泡泡纸</a>
+  <a href="#stone"><span>🪨</span>石头</a>
+  <a href="#rain"><span>🌧️</span>雨窗</a>
+  <a href="#poke"><span>👉</span>戳这里</a>
+  <a href="#noodle"><span>🍜</span>泡面</a>
+  <a href="#kiddy"><span>🚗</span>摇摇车</a>
+  <a href="#brush"><span>🧹</span>刷毛毛</a>
+  <a href="#radio"><span>📻</span>收音机</a>
+  <a href="#trophy"><span>🏆</span>成就</a>
+</div>
+
+<!-- ============ 封面 ============ -->
+<section id="hero">
+  <div class="can">
+    <div class="can-body">
+      <div class="can-label">
+        <div class="cn">无聊罐头</div>
+        <div class="en">CAN OF BOREDOM · NET 45MIN DAYDREAM</div>
+        <div class="divider"></div>
+        <div class="meta">
+          配料：木鱼、泡泡纸、一块石头、一场雨、<br>
+          一碗面、摇摇车、毛毛、废话若干<br>
+          保质期：到你舍得放下手机为止<br>
+          生产许可：无（本产品拒绝生产焦虑）<br>
+          厂长：一只不上班的猫
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="hero-slogan">
+    这里没有排行榜，没有待办，没有"你应该"。<br>
+    <b>拧开罐头，无聊十分钟，是正经事。</b>
+  </p>
+  <div class="scroll-tip">↓ 往下拧开罐头 ↓</div>
+</section>
+
+<!-- ============ 木鱼 ============ -->
+<section id="woodfish">
+  <div class="sec-tag">CAN 01 / 09</div>
+  <div class="sec-title">电子木鱼</div>
+  <div class="sec-sub">敲一下，功德 +1。这里的功德不兑换任何东西，只兑换一下"咚"。</div>
+  <div class="card stage" style="position:relative;">
+    <div class="woodfish" id="woodfishBtn"></div>
+    <div class="counter-num" id="meritNum" style="margin-top:22px;">0</div>
+    <div class="hint">连敲 100 下会有事情发生（好事）</div>
+  </div>
+</section>
+
+<!-- ============ 泡泡纸 ============ -->
+<section id="bubble">
+  <div class="sec-tag">CAN 02 / 09</div>
+  <div class="sec-title">无限泡泡纸</div>
+  <div class="sec-sub">按住滑过去，一路捏爆。捏完一张自动补货，永远捏不完，永远不用焦虑捏不完。</div>
+  <div class="card">
+    <div class="bubble-grid" id="bubbleGrid"></div>
+    <div class="hint">已捏爆 <b id="popNum" style="color:var(--accent-deep)">0</b> 个泡泡</div>
+  </div>
+</section>
+
+<!-- ============ 石头 ============ -->
+<section id="stone">
+  <div class="sec-tag">CAN 03 / 09</div>
+  <div class="sec-title">云养石头</div>
+  <div class="sec-sub">它不吵，不闹，不问工资，不劝上进。点它名字可以给它改一个你的名字。</div>
+  <div class="card stage">
+    <div class="stone" id="stoneBtn"><div class="face">· ·</div></div>
+    <div style="margin-top:18px;">这只叫 <span class="stone-name" id="stoneName">小石头</span><input class="stone-rename" id="stoneRename" maxlength="8" placeholder="最多8个字"></div>
+    <div class="stone-talk" id="stoneTalk">它是一块石头。</div>
+    <div class="hint">已摸 <b id="petNum" style="color:var(--accent-deep)">0</b> 次 · 它陪你发呆了 <b id="stoneTime" style="color:var(--accent-deep)">00:00</b></div>
+  </div>
+</section>
+
+<!-- ============ 雨窗 ============ -->
+<section id="rain">
+  <div class="sec-tag">CAN 04 / 09</div>
+  <div class="sec-title">电子雨窗</div>
+  <div class="sec-sub">外面的雨跟你没关系，你只管看。手指划过去擦一下玻璃，擦完它还会再下。</div>
+  <div class="card">
+    <div class="rain-wrap"><canvas id="rainCanvas" height="320"></canvas></div>
+    <div class="rain-ctrl">
+      <div class="seg" id="rainSeg">
+        <button data-size="small" class="on">小雨</button>
+        <button data-size="big">暴雨</button>
+      </div>
+      <button class="soft-btn ghost" id="rainSoundBtn" style="padding:8px 18px;font-size:13px;">🌧️ 雨声：关</button>
+    </div>
+    <div class="hint">已擦掉 <b id="wipeNum" style="color:var(--accent-deep)">0</b> 滴雨 · 反正也擦不完，擦着玩</div>
+  </div>
+</section>
+
+<!-- ============ 戳这里 ============ -->
+<section id="poke">
+  <div class="sec-tag">CAN 05 / 09</div>
+  <div class="sec-title">戳这里</div>
+  <div class="sec-sub">一个没什么用的按钮。按它就是全部玩法。人生里这种纯按心情的东西不多了，且按且珍惜。</div>
+  <div class="card stage">
+    <button class="poke-btn" id="pokeBtn">戳我</button>
+    <div class="poke-log" id="pokeLog"></div>
+  </div>
+</section>
+
+<!-- ============ 泡面 ============ -->
+<section id="noodle">
+  <div class="sec-tag">CAN 06 / 09</div>
+  <div class="sec-title">泡一碗面</div>
+  <div class="sec-sub">烧水，泡面，等三分钟，吃掉。今天没有别的事，就是吃了一碗面。<b>这是你的面，你可以随时快进。</b></div>
+  <div class="card stage">
+    <div class="bowl" id="bowl"><div class="steam"><i></i><i></i><i></i></div></div>
+    <div class="noodle-timer" id="noodleTimer"></div>
+    <div class="noodle-status" id="noodleStatus">水还没烧，面还没泡，一切还来得及。</div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="soft-btn" id="noodleBtn">烧水</button>
+      <button class="soft-btn ghost" id="noodleSkip" style="display:none;">偷偷快进</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 摇摇车 ============ -->
+<section id="kiddy">
+  <div class="sec-tag">CAN 07 / 09</div>
+  <div class="sec-title">电子摇摇车</div>
+  <div class="sec-sub">本次列车开往：五岁。币无限量供应，儿歌由本罐头厂电子琴部荣誉出品。</div>
+  <div class="card stage">
+    <div class="kiddy-stage">
+      <svg class="kiddy" id="kiddyCar" viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="110" cy="188" rx="86" ry="9" fill="rgba(0,0,0,.10)"/>
+        <path d="M30 178 Q22 120 60 112 L60 60 Q60 30 110 30 Q160 30 160 60 L160 112 Q198 120 190 178 Z" fill="#F2A65A" stroke="#E08B3A" stroke-width="4"/>
+        <path d="M78 34 Q110 6 142 34 L142 46 Q110 26 78 46 Z" fill="#FFD9A8" stroke="#E08B3A" stroke-width="3"/>
+        <circle cx="42" cy="106" r="10" fill="#FFFCF5" stroke="#E08B3A" stroke-width="3"/>
+        <circle cx="178" cy="106" r="10" fill="#FFFCF5" stroke="#E08B3A" stroke-width="3"/>
+        <g id="horseG">
+          <rect x="78" y="96" width="64" height="16" rx="8" fill="#E85D3D"/>
+          <rect x="92" y="58" width="10" height="42" rx="5" fill="#B7A894"/>
+          <rect x="118" y="58" width="10" height="42" rx="5" fill="#B7A894"/>
+          <g id="horseBody">
+            <ellipse cx="110" cy="52" rx="34" ry="22" fill="#FFFCF5" stroke="#D8C9B4" stroke-width="3"/>
+            <circle cx="141" cy="38" r="14" fill="#FFFCF5" stroke="#D8C9B4" stroke-width="3"/>
+            <circle cx="146" cy="34" r="2.4" fill="#4A403A"/>
+            <path d="M133 44 Q130 49 134 52" stroke="#D8C9B4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M139 22 Q135 12 126 14" stroke="#D8C9B4" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M84 50 Q66 58 70 74" stroke="#FFFCF5" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <path d="M96 70 Q94 80 86 82 M124 70 Q126 80 134 82" stroke="#FFFCF5" stroke-width="7" fill="none" stroke-linecap="round"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="coin-slot" id="coinSlot"><div class="slit"></div><div class="coin" id="coin"></div><span id="slotTxt">投币</span></div>
+    <div class="hint" id="kiddyHint">坐了 <b id="rideNum" style="color:var(--accent-deep)">0</b> 次 · 长大了也能坐，这是本罐头的规矩</div>
+  </div>
+</section>
+
+<!-- ============ 刷毛毛 ============ -->
+<section id="brush">
+  <div class="sec-tag">CAN 08 / 09</div>
+  <div class="sec-title">刷毛毛</div>
+  <div class="sec-sub">一块乱糟糟的长毛地毯，用手指把它刷顺。刷的时候有沙沙声，刷完的那一秒，什么东西都被抚平了。</div>
+  <div class="card">
+    <div class="brush-wrap"><canvas id="brushCanvas" height="300"></canvas></div>
+    <div class="brush-bar"><i id="brushBar"></i></div>
+    <div class="hint">手指在毛上滑，顺着一个方向，像给一只大猫顺毛</div>
+  </div>
+</section>
+
+<!-- ============ 废话收音机 ============ -->
+<section id="radio">
+  <div class="sec-tag">CAN 09 / 09</div>
+  <div class="sec-title">废话收音机</div>
+  <div class="sec-sub">罐头厂深夜电台，只播废话。废话的疗效：听着听着，就原谅今天了。</div>
+  <div class="radio">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div class="radio-freq">FM 0.0 · 罐头厂深夜档</div>
+      <div style="font-size:14px;">📻</div>
+    </div>
+    <div class="radio-screen" id="radioScreen">拧一下旋钮，开始收听。</div>
+    <div class="radio-knob-row">
+      <div class="radio-freq" id="radioCount">已收听 0 句</div>
+      <div class="radio-knob" id="radioKnob" title="点我换台"></div>
+    </div>
+  </div>
+  <div class="hint">本台不接受点歌，只接受emo</div>
+</section>
+
+<!-- ============ 成就墙 ============ -->
+<section id="trophy">
+  <div class="sec-tag">BONUS</div>
+  <div class="sec-title">罐头厂荣誉室</div>
+  <div class="sec-sub">这些成就毫无用处，所以格外珍贵。截图发出去，告诉大家你今天正事一件没干，但很快乐。</div>
+  <div class="progress-track"><i id="trophyBar"></i></div>
+  <div class="badge-grid" id="badgeGrid"></div>
+
+  <div class="rules" style="margin-top:36px;">
+    <b>🥫 罐头厂店规</b><br>
+    一、禁止上进<br>
+    二、禁止比较<br>
+    三、发呆合法，且受本店保护<br>
+    四、摸鱼不扣钱（本店也没有钱）<br>
+    五、你已经很好了，不用证明
+  </div>
+</section>
+
+<footer>
+  <div class="paw">🐾</div>
+  无聊罐头 · 由一只不上班的猫厂长运营<br>
+  本罐头不含任何 KPI / 排行榜 / "为你好"<br>
+  今天也是没有变成更好的人的一天，恭喜。<br><br>
+  <span id="ownerLine" style="display:none;color:var(--accent-deep);"></span>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   无聊罐头 CAN OF BOREDOM
+   定制入口：卖家只需要改下面 OWNER_NAME 这一行的引号内容
+   ================================================================ */
+const OWNER_NAME = ""; /* ← 把买家的名字写在这里，例如 "给小明定制的罐头" */
+
+/* URL 参数支持：?theme=dark 被窝模式；?go=x 直达某罐头；?only=x 单罐头模式（只显示一个区块）；?shot=1 跳过进场动画 */
+try{
+  const __q = new URLSearchParams(location.search);
+  if(__q.get("theme") === "dark") document.documentElement.classList.add("dark");
+  if(__q.get("shot") === "1"){
+    const __st = document.createElement("style");
+    __st.textContent = "section{opacity:1 !important;transform:none !important;transition:none !important;}";
+    document.head.appendChild(__st);
+  }
+  const __only = __q.get("only");
+  if(__only && document.querySelector("#" + CSS.escape(__only))){
+    const __st2 = document.createElement("style");
+    __st2.textContent = "section{display:none !important;} #" + CSS.escape(__only) + "{display:flex !important;}";
+    document.head.appendChild(__st2);
+  }
+  const __go = __q.get("go");
+  if(__go && document.querySelector("#" + CSS.escape(__go))){
+    document.documentElement.style.scrollBehavior = "auto";
+    addEventListener("load", () => {
+      document.querySelector("#" + CSS.escape(__go)).scrollIntoView({behavior:"instant", block:"start"});
+    });
+  }
+  if(__q.get("probe")){
+    addEventListener("load", () => {
+      document.title = "PROBE:" + window.innerWidth + "x" + window.innerHeight + "@dpr" + window.devicePixelRatio;
+    });
+  }
+}catch(e){}
+
+/* ---------- 存档 ---------- */
+const SAVE_KEY = "boring_can_v1";
+const DEFAULT_SAVE = {
+  score:0, merit:0, pops:0, pets:0, stoneName:"小石头", wipes:0,
+  pokes:0, noodles:0, rides:0, radios:0,
+  badges:[], sound:true, dark:false
+};
+let S;
+try{ S = Object.assign({}, DEFAULT_SAVE, JSON.parse(localStorage.getItem(SAVE_KEY)||"{}")); }
+catch(e){ S = Object.assign({}, DEFAULT_SAVE); }
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+
+/* ---------- 音效引擎（全部实时合成，无需任何音频文件） ---------- */
+const AE = {
+  ctx:null, master:null, rainSrc:null, rainGain:null, rainTimer:null,
+  brushSrc:null, brushGain:null, musicNodes:[], on:true,
+  ensure(){
+    if(!this.ctx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return false;
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = .55;
+      this.master.connect(this.ctx.destination);
+    }
+    if(this.ctx.state === "suspended") this.ctx.resume();
+    return true;
+  },
+  ok(){ return this.on && this.ensure(); },
+  tone(freq, dur, type="sine", vol=.5, when=0){
+    if(!this.ok()) return;
+    const t = this.ctx.currentTime + when;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + dur + .05);
+    return {o, g};
+  },
+  noise(dur, vol=.4, filterFreq=3000, type="highpass", when=0){
+    if(!this.ok()) return;
+    const t = this.ctx.currentTime + when;
+    const len = Math.max(1, Math.floor(this.ctx.sampleRate * dur));
+    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+    const src = this.ctx.createBufferSource(); src.buffer = buf;
+    const f = this.ctx.createBiquadFilter(); f.type = type; f.frequency.value = filterFreq;
+    const g = this.ctx.createGain(); g.gain.value = vol;
+    src.connect(f); f.connect(g); g.connect(this.master);
+    src.start(t);
+  },
+  /* 木鱼：闷低频 + 短高频 */
+  woodfish(){
+    if(!this.ok()) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(1050, t);
+    o.frequency.exponentialRampToValueAtTime(620, t+.07);
+    g.gain.setValueAtTime(.7, t);
+    g.gain.exponentialRampToValueAtTime(.001, t+.12);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t+.15);
+    const o2 = this.ctx.createOscillator(), g2 = this.ctx.createGain();
+    o2.type = "sine"; o2.frequency.value = 190;
+    g2.gain.setValueAtTime(.45, t);
+    g2.gain.exponentialRampToValueAtTime(.001, t+.1);
+    o2.connect(g2); g2.connect(this.master); o2.start(t); o2.stop(t+.12);
+  },
+  pop(){ this.noise(.07, .5, 1800 + Math.random()*1800, "bandpass"); this.tone(300+Math.random()*500, .05, "sine", .18); },
+  coin(){ this.tone(1250,.09,"square",.16); this.tone(1660,.14,"square",.14,.07); this.tone(1660,.2,"square",.1,.16); },
+  ding(){ this.tone(1174,.6,"sine",.4); this.tone(1568,.9,"sine",.28,.02); },
+  click(){ this.noise(.03,.3,4000,"highpass"); },
+  vibrate(ms){ if(navigator.vibrate) try{navigator.vibrate(ms);}catch(e){} },
+  /* 雨声：低通白噪 + 随机滴答 */
+  rainStart(){
+    if(!this.ensure() || this.rainSrc) return;
+    const len = this.ctx.sampleRate * 2;
+    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+    this.rainSrc = this.ctx.createBufferSource();
+    this.rainSrc.buffer = buf; this.rainSrc.loop = true;
+    const f = this.ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value = 900;
+    this.rainGain = this.ctx.createGain(); this.rainGain.gain.value = 0;
+    this.rainGain.gain.linearRampToValueAtTime(.16, this.ctx.currentTime + 1.5);
+    this.rainSrc.connect(f); f.connect(this.rainGain); this.rainGain.connect(this.master);
+    this.rainSrc.start();
+    this.rainTimer = setInterval(()=>{ if(Math.random()<.5) this.noise(.05,.12,2500+Math.random()*2000,"bandpass"); }, 320);
+  },
+  rainStop(){
+    if(!this.rainSrc) return;
+    try{
+      this.rainGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + .8);
+      const src = this.rainSrc;
+      setTimeout(()=>{ try{src.stop();}catch(e){} }, 900);
+    }catch(e){}
+    this.rainSrc = null;
+    clearInterval(this.rainTimer);
+  },
+  /* 刷毛：带通噪声，音量随速度 */
+  brushSetup(){
+    if(!this.ensure() || this.brushSrc) return;
+    const len = this.ctx.sampleRate * 1;
+    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+    this.brushSrc = this.ctx.createBufferSource();
+    this.brushSrc.buffer = buf; this.brushSrc.loop = true;
+    const f = this.ctx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=4200; f.Q.value=.7;
+    this.brushGain = this.ctx.createGain(); this.brushGain.gain.value = 0;
+    this.brushSrc.connect(f); f.connect(this.brushGain); this.brushGain.connect(this.master);
+    this.brushSrc.start();
+  },
+  brushSpeed(v){
+    if(!this.brushGain || !this.on) return;
+    this.brushGain.gain.linearRampToValueAtTime(Math.min(.28, v*.02), this.ctx.currentTime + .05);
+    clearTimeout(this._brushT);
+    this._brushT = setTimeout(()=>{ if(this.brushGain) this.brushGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime+.15); }, 90);
+  },
+  /* 两只老虎：摇摇车特供 */
+  melody(){
+    if(!this.ok()) return;
+    const N = {C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99, A5:880, G4:392, C4:261.63};
+    const beat = .4;
+    const mel = [
+      ["C5",1],["D5",1],["E5",1],["C5",1],
+      ["C5",1],["D5",1],["E5",1],["C5",1],
+      ["E5",1],["F5",1],["G5",2],
+      ["E5",1],["F5",1],["G5",2],
+      ["G5",.5],["A5",.5],["G5",.5],["F5",.5],["E5",1],["C5",1],
+      ["G5",.5],["A5",.5],["G5",.5],["F5",.5],["E5",1],["C5",1],
+      ["C5",1],["G4",1],["C5",2],
+      ["C5",1],["G4",1],["C5",2]
+    ];
+    let t = 0;
+    for(const [n,b] of mel){
+      const node = this.tone(N[n], b*beat*.92, "sine", .22, t);
+      if(node) this.musicNodes.push(node.o);
+      const h = this.tone(N[n]*2, b*beat*.9, "sine", .05, t);
+      if(h) this.musicNodes.push(h.o);
+      t += b*beat;
+    }
+  },
+  melodyStop(){
+    this.musicNodes.forEach(n=>{ try{ n.stop(); }catch(e){} });
+    this.musicNodes = [];
+  }
+};
+
+/* ---------- 通用 UI ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+let toastT;
+function toast(msg, dur=2200){
+  const el = $("#toast");
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>el.classList.remove("show"), dur);
+}
+function addScore(n, silent){
+  S.score += n; save();
+  const b = $("#scoreNum");
+  b.textContent = S.score;
+  b.classList.add("bump");
+  setTimeout(()=>b.classList.remove("bump"), 160);
+  checkBadges();
+}
+function vibrateSafe(ms){ AE.vibrate(ms); }
+
+/* ---------- 音效/被窝开关 ---------- */
+const soundBtn = $("#soundBtn"), darkBtn = $("#darkBtn");
+function syncBtns(){
+  soundBtn.textContent = S.sound ? "🔊" : "🔇";
+  darkBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️" : "🌙";
+}
+soundBtn.onclick = () => {
+  S.sound = !S.sound; AE.on = S.sound; save(); syncBtns();
+  if(!S.sound){ AE.rainStop(); AE.melodyStop(); rainSoundOn = false; $("#rainSoundBtn").textContent = "🌧️ 雨声：关"; }
+  toast(S.sound ? "音效已开，声音很软" : "音效已关，罐头静音模式");
+};
+darkBtn.onclick = () => {
+  document.documentElement.classList.toggle("dark");
+  S.dark = document.documentElement.classList.contains("dark");
+  save(); syncBtns();
+  drawBrush(); initRain();
+  toast(S.dark ? "被窝模式已开，灯给你关了" : "天亮了（并没有）");
+};
+if(S.dark){ document.documentElement.classList.add("dark"); }
+AE.on = S.sound;
+
+/* 定制罐头 */
+if(OWNER_NAME){
+  const o = $("#ownerLine");
+  o.textContent = "🥫 " + OWNER_NAME + " 专属罐头";
+  o.style.display = "block";
+  document.title = OWNER_NAME + " 的无聊罐头";
+}
+
+/* ---------- 进场动画 ---------- */
+const io = new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add("in"); });
+},{threshold:.12});
+$$("section").forEach(s=>io.observe(s));
+
+/* 货架跳转：JS接管，兼容部分不支持锚点/平滑滚动的WebView */
+$$("#shelf a").forEach(a=>{
+  a.addEventListener("click", e=>{
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute("href"));
+    if(!t) return;
+    const y0 = window.scrollY;
+    t.scrollIntoView({behavior:"smooth", block:"start"});
+    setTimeout(()=>{
+      /* 平滑滚动没生效的环境（部分WebView）直接定位 */
+      if(Math.abs(window.scrollY - y0) < 30 && Math.abs(t.getBoundingClientRect().top) > 90){
+        t.scrollIntoView({behavior:"instant", block:"start"});
+      }
+    }, 250);
+  });
+});
+
+/* ================================================================
+   CAN 01 电子木鱼
+   ================================================================ */
+const meritNum = $("#meritNum");
+meritNum.textContent = S.merit;
+$("#woodfishBtn").addEventListener("pointerdown", e=>{
+  S.merit++; save();
+  meritNum.textContent = S.merit;
+  AE.woodfish(); vibrateSafe(12);
+  addScore(1);
+  const fly = document.createElement("div");
+  fly.className = "merit-fly";
+  fly.textContent = "功德 +1";
+  const stage = e.currentTarget.parentElement;
+  const r = e.currentTarget.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+  fly.style.left = (r.left - sr.left + r.width/2 - 30 + (Math.random()*40-20)) + "px";
+  fly.style.top = (r.top - sr.top + 20) + "px";
+  stage.appendChild(fly);
+  setTimeout(()=>fly.remove(), 1000);
+  if(S.merit === 100) toast("🪵 成就解锁【功德圆满】：功德够了，剩下的明天再敲。", 3200);
+  if(S.merit === 500) toast("施主，你敲的这些功德，本厂建议全部兑换成今晚早点睡。", 3200);
+});
+
+/* ================================================================
+   CAN 02 泡泡纸
+   ================================================================ */
+const grid = $("#bubbleGrid");
+let popping = false;
+function buildBubbles(){
+  grid.innerHTML = "";
+  for(let i=0;i<60;i++){
+    const b = document.createElement("div");
+    b.className = "bubble";
+    grid.appendChild(b);
+  }
+}
+buildBubbles();
+function popEl(el){
+  if(!el || !el.classList.contains("bubble") || el.classList.contains("popped")) return;
+  el.classList.add("popped");
+  S.pops++; save();
+  $("#popNum").textContent = S.pops;
+  AE.pop(); vibrateSafe(8);
+  addScore(1);
+  if(S.pops === 100) toast("🫧 成就解锁【指尖清洁工】：100 个泡泡魂归罐头。", 3000);
+  if(!grid.querySelector(".bubble:not(.popped)")){
+    setTimeout(()=>{
+      toast("这张捏完了。舒服。新的一张已装填——");
+      setTimeout(buildBubbles, 700);
+    }, 350);
+  }
+}
+grid.addEventListener("pointerdown", e=>{ popping = true; popEl(e.target); });
+grid.addEventListener("pointermove", e=>{
+  if(!popping) return;
+  popEl(document.elementFromPoint(e.clientX, e.clientY));
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>grid.addEventListener(ev, ()=>popping=false));
+$("#popNum").textContent = S.pops;
+
+/* ================================================================
+   CAN 03 云养石头
+   ================================================================ */
+const stoneTalk = $("#stoneTalk");
+const stoneLines = [
+  [0, "它是一块石头。"],
+  [1, "它没有反应。正常，它是石头。"],
+  [10, "它可能知道了你在摸它。也可能没有。"],
+  [30, "你们之间产生了一些说不清的东西。"],
+  [60, "它开始有点像你的了。虽然它谁的也不是。"],
+  [100, "🪨 成就【石头之交】达成：它把你当自己人了。（石头语，翻译过来大概是这样）"],
+  [200, "外面那些人会问你想成为什么样的人，它只想让你坐一会儿。"]
+];
+function stoneSay(n){
+  let line = stoneLines[0][1];
+  for(const [k, v] of stoneLines) if(n >= k) line = v;
+  stoneTalk.textContent = line;
+}
+$("#stoneBtn").addEventListener("pointerdown", ()=>{
+  S.pets++; save();
+  $("#petNum").textContent = S.pets;
+  stoneSay(S.pets);
+  AE.click(); vibrateSafe(6);
+  addScore(1);
+});
+$("#petNum").textContent = S.pets;
+stoneSay(S.pets);
+$("#stoneName").textContent = S.stoneName;
+$("#stoneName").addEventListener("click", ()=>{
+  const inp = $("#stoneRename");
+  inp.classList.add("on");
+  inp.value = S.stoneName;
+  inp.focus();
+});
+$("#stoneRename").addEventListener("keydown", e=>{
+  if(e.key === "Enter") e.target.blur();
+});
+$("#stoneRename").addEventListener("blur", e=>{
+  const v = e.target.value.trim() || "小石头";
+  S.stoneName = v.slice(0,8); save();
+  $("#stoneName").textContent = S.stoneName;
+  e.target.classList.remove("on");
+  toast("它现在叫「" + S.stoneName + "」了。它没有意见。");
+});
+/* 陪伴计时 */
+let stoneSecs = 0;
+setInterval(()=>{
+  const r = $("#stone").getBoundingClientRect();
+  if(r.top < innerHeight && r.bottom > 0){
+    stoneSecs++;
+    const m = String(Math.floor(stoneSecs/60)).padStart(2,"0");
+    const s = String(stoneSecs%60).padStart(2,"0");
+    $("#stoneTime").textContent = m + ":" + s;
+    if(stoneSecs === 120) toast("你和石头已经一起发了 2 分钟呆。今天是合格的。", 2600);
+  }
+}, 1000);
+
+/* ================================================================
+   CAN 04 雨窗
+   ================================================================ */
+const rc = $("#rainCanvas");
+const rctx = rc.getContext("2d");
+let rainDrops = [], rainSize = "small", rainSoundOn = false, wipeCount = 0;
+function initRain(){
+  const w = rc.parentElement.clientWidth;
+  const dpr = Math.min(devicePixelRatio||1, 2);
+  rc.width = w * dpr; rc.height = 320 * dpr;
+  rc.style.height = "320px";
+  rctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function spawnDrop(){
+  rainDrops.push({
+    x: Math.random() * rc.parentElement.clientWidth,
+    y: -20 - Math.random()*60,
+    len: 14 + Math.random()*26,
+    v: (rainSize==="big" ? 5.5 : 3) + Math.random()*2.5,
+    w: rainSize==="big" ? 2.2 : 1.5
+  });
+}
+function rainLoop(){
+  const W = rc.parentElement.clientWidth, H = 320;
+  rctx.fillStyle = "rgba(214,225,235,.16)";
+  rctx.fillRect(0,0,W,H);
+  /* 玻璃雾面底 */
+  if(rainDrops.length === 0 || Math.random() < .02){}
+  if(Math.random() < (rainSize==="big" ? .9 : .45)) spawnDrop();
+  rctx.lineCap = "round";
+  rainDrops.forEach(d=>{
+    rctx.strokeStyle = "rgba(255,255,255,.75)";
+    rctx.lineWidth = d.w;
+    rctx.beginPath();
+    rctx.moveTo(d.x, d.y);
+    rctx.lineTo(d.x, d.y + d.len);
+    rctx.stroke();
+    rctx.fillStyle = "rgba(255,255,255,.9)";
+    rctx.beginPath(); rctx.arc(d.x, d.y + d.len, d.w*1.4, 0, 7); rctx.fill();
+    d.y += d.v;
+  });
+  rainDrops = rainDrops.filter(d=>d.y < H + 40);
+  requestAnimationFrame(rainLoop);
+}
+function rainWipe(e){
+  const r = rc.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const before = rainDrops.length;
+  rainDrops = rainDrops.filter(d=>{
+    const dx = d.x - x, dy = d.y - y;
+    return dx*dx + dy*dy > 60*60;
+  });
+  const wiped = before - rainDrops.length;
+  if(wiped > 0){
+    wipeCount++; S.wipes = wipeCount; save();
+    $("#wipeNum").textContent = wipeCount;
+    addScore(wiped);
+    if(wipeCount === 50) toast("🌧️ 成就解锁【观雨员】：50 滴雨被你擦掉了。雨表示毫无怨言。", 3000);
+  }
+}
+rc.addEventListener("pointerdown", rainWipe);
+rc.addEventListener("pointermove", e=>{ if(e.buttons || e.pointerType==="touch") rainWipe(e); });
+$("#rainSeg").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  $$("#rainSeg button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  rainSize = b.dataset.size;
+  AE.click();
+});
+$("#rainSoundBtn").addEventListener("click", function(){
+  rainSoundOn = !rainSoundOn;
+  this.textContent = rainSoundOn ? "🌧️ 雨声：开" : "🌧️ 雨声：关";
+  if(rainSoundOn) AE.rainStart(); else AE.rainStop();
+});
+initRain(); rainLoop();
+$("#wipeNum").textContent = S.wipes; wipeCount = S.wipes;
+
+/* ================================================================
+   CAN 05 戳这里
+   ================================================================ */
+const pokeTexts = [
+  "没了。","真没了。","你还戳。","行吧。","（……）","你是懂戳的。",
+  "好，告诉你个秘密：我其实还没坏。","行，这个给你：🥉 毅力勋章。",
+  "好了，戳到此为止，去干点别的无聊的事吧。"
+];
+let pokeIdx = 0;
+$("#pokeBtn").addEventListener("click", function(){
+  S.pokes++; save();
+  AE.click(); vibrateSafe(10);
+  addScore(1);
+  const log = $("#pokeLog");
+  if(pokeIdx < pokeTexts.length){
+    log.textContent = pokeTexts[pokeIdx];
+    if(pokeIdx === 0) this.classList.add("dead"), this.textContent = "（没了）";
+    if(pokeIdx === 7) toast("👉 成就解锁【毅力惊人】：你把一个没用的按钮戳穿了。很了不起，真的。", 3200);
+    if(pokeIdx === 8){
+      setTimeout(()=>{
+        this.classList.remove("dead"); this.textContent = "戳我";
+        log.textContent = "（它又满血复活了，虽然它从来没有血）";
+        AE.ding();
+      }, 2600);
+    }
+    pokeIdx++;
+  } else {
+    pokeIdx = 0;
+    log.textContent = "……从头再来？行，你是自由的。";
+  }
+});
+
+/* ================================================================
+   CAN 06 泡一碗面
+   ================================================================ */
+const noodleStatus = $("#noodleStatus"), noodleTimer = $("#noodleTimer"),
+      noodleBtn = $("#noodleBtn"), noodleSkip = $("#noodleSkip"), bowl = $("#bowl");
+let noodleState = "idle", noodleLeft = 0, noodleInterval = null;
+function setNoodle(state){
+  noodleState = state;
+  bowl.classList.toggle("steaming", state==="water"||state==="soak"||state==="ready");
+}
+noodleBtn.addEventListener("click", ()=>{
+  AE.click();
+  if(noodleState === "idle"){
+    setNoodle("water");
+    noodleStatus.textContent = "水开了。咕嘟咕嘟。";
+    noodleBtn.textContent = "下面！";
+    setTimeout(()=>{ if(noodleState==="water"){ setNoodle("soak"); noodleLeft = 180; updTimer(); noodleStatus.textContent = "面泡上了。等三分钟，急也没用，面有面的节奏。"; noodleBtn.style.display="none"; noodleSkip.style.display="inline-block"; AE.noise(.4,.2,800,"lowpass"); noodleInterval = setInterval(tick, 1000);} }, 1400);
+  } else if(noodleState === "ready"){
+    setNoodle("eating");
+    noodleBtn.style.display = "none";
+    noodleStatus.textContent = "吸——溜。";
+    AE.noise(.5,.3,1200,"bandpass");
+    let bites = 0;
+    const eat = setInterval(()=>{
+      bites++;
+      noodleStatus.textContent = ["吸——溜。","再来一口。","完了，连汤都喝了。","……"][bites] || "……";
+      AE.noise(.3,.25,1000,"bandpass");
+      addScore(1);
+      if(bites >= 3){
+        clearInterval(eat);
+        setNoodle("empty");
+        noodleTimer.textContent = "";
+        noodleStatus.textContent = "吃完了。好吃。今天没有别的事，就是吃了一碗面。";
+        noodleBtn.textContent = "再泡一碗";
+        noodleBtn.style.display = "inline-block";
+        S.noodles++; save();
+        if(S.noodles === 1) toast("🍜 成就解锁【干饭魂】：你在网页里吃完了一碗面。", 3000);
+      }
+    }, 1100);
+  } else if(noodleState === "empty"){
+    setNoodle("idle");
+    noodleBtn.textContent = "烧水";
+    noodleStatus.textContent = "水还没烧，面还没泡，一切还来得及。";
+  }
+});
+function updTimer(){
+  const m = String(Math.floor(noodleLeft/60)).padStart(1,"0");
+  const s = String(noodleLeft%60).padStart(2,"0");
+  noodleTimer.textContent = m + ":" + s;
+}
+function tick(){
+  noodleLeft--;
+  if(noodleLeft <= 0){
+    clearInterval(noodleInterval);
+    setNoodle("ready");
+    noodleTimer.textContent = "";
+    noodleStatus.textContent = "好了！开吃。";
+    noodleSkip.style.display = "none";
+    noodleBtn.textContent = "开吃！";
+    noodleBtn.style.display = "inline-block";
+    AE.ding();
+  } else updTimer();
+}
+noodleSkip.addEventListener("click", ()=>{
+  AE.click();
+  const lines = ["偷偷快进 10 秒，没人看见。","又快进了 10 秒。这是你的面，你说了算。","再快进就熟过头了（并不会）。"];
+  noodleLeft = Math.max(1, noodleLeft - 10);
+  updTimer();
+  noodleStatus.textContent = lines[Math.floor(Math.random()*lines.length)];
+});
+
+/* ================================================================
+   CAN 07 电子摇摇车
+   ================================================================ */
+const coin = $("#coin"), kiddyCar = $("#kiddyCar"), slotTxt = $("#slotTxt");
+let riding = false;
+$("#coinSlot").addEventListener("click", ()=>{
+  if(riding) return;
+  riding = true;
+  coin.classList.remove("drop"); void coin.offsetWidth; coin.classList.add("drop");
+  AE.coin(); vibrateSafe(20);
+  setTimeout(()=>{
+    AE.melody();
+    kiddyCar.classList.add("rocking");
+    slotTxt.textContent = "运行中";
+    toast("🚗 本次列车开往：五岁。请坐稳，不用扶，这里没有人生的方向盘。", 3000);
+    addScore(1);
+    setTimeout(()=>{
+      AE.melodyStop();
+      kiddyCar.classList.remove("rocking");
+      slotTxt.textContent = "再投一次";
+      riding = false;
+      S.rides++; save();
+      $("#rideNum").textContent = S.rides;
+      toast("本次旅程结束。你从五岁回来了，顺便带回了一点快乐。", 2800);
+      if(S.rides === 3) toast("🚗 成就解锁【永远的五岁】：连坐三次摇摇车，你比小孩还专业。", 3200);
+    }, 32000);
+  }, 650);
+});
+$("#rideNum").textContent = S.rides;
+
+/* ================================================================
+   CAN 08 刷毛毛
+   ================================================================ */
+const bc = $("#brushCanvas");
+const bctx = bc.getContext("2d");
+let hairs = [], lastPt = null, brushingDone = false;
+function initBrush(){
+  const w = bc.parentElement.clientWidth, h = 300;
+  const dpr = Math.min(devicePixelRatio||1, 2);
+  bc.width = w*dpr; bc.height = h*dpr;
+  bc.style.height = h+"px";
+  bctx.setTransform(dpr,0,0,dpr,0,0);
+  hairs = [];
+  const dark = document.documentElement.classList.contains("dark");
+  const base = dark ? [90,80,70] : [176,152,128];
+  const n = Math.floor(w*h/34);
+  for(let i=0;i<n;i++){
+    hairs.push({
+      x: Math.random()*w, y: Math.random()*h,
+      a: Math.random()*Math.PI*2,
+      l: 9 + Math.random()*8,
+      flat: 0,
+      tone: Math.random()
+    });
+  }
+  brushingDone = false;
+  drawBrush();
+}
+function drawBrush(){
+  const dark = document.documentElement.classList.contains("dark");
+  bctx.fillStyle = dark ? "#3B342E" : "#E8DCCB";
+  bctx.fillRect(0,0,bc.width,bc.height);
+  hairs.forEach(h=>{
+    const t = h.tone;
+    const r0 = 150 + t*50, g0 = 128 + t*40, b0 = 104 + t*36;
+    const gray = h.flat;
+    bctx.strokeStyle = "rgba(" + Math.round(r0+(220-r0)*gray) + "," + Math.round(g0+(218-g0)*gray) + "," + Math.round(b0+(210-b0)*gray) + ",.9)";
+    bctx.lineWidth = 1.4;
+    bctx.beginPath();
+    bctx.moveTo(h.x, h.y);
+    bctx.lineTo(h.x + Math.cos(h.a)*h.l*(1+gray*.4), h.y + Math.sin(h.a)*h.l*(1+gray*.4));
+    bctx.stroke();
+  });
+  const flatN = hairs.filter(h=>h.flat > .6).length;
+  const pct = Math.round(flatN / hairs.length * 100);
+  $("#brushBar").style.width = pct + "%";
+  if(pct >= 88 && !brushingDone){
+    brushingDone = true;
+    toast("🧹 刷完了，真干净。再看两秒，然后给你换一块新的。", 2600);
+    addScore(5);
+    setTimeout(initBrush, 2600);
+  }
+}
+bc.addEventListener("pointerdown", e=>{ lastPt = {x:e.offsetX, y:e.offsetY}; AE.brushSetup(); });
+bc.addEventListener("pointermove", e=>{
+  if(!lastPt) return;
+  const x = e.offsetX, y = e.offsetY;
+  const dx = x - lastPt.x, dy = y - lastPt.y;
+  const dist = Math.hypot(dx, dy);
+  if(dist < 1) return;
+  const dir = Math.atan2(dy, dx);
+  let changed = false;
+  hairs.forEach(h=>{
+    const d = Math.hypot(h.x - x, h.y - y);
+    if(d < 42){
+      let diff = dir - h.a;
+      while(diff > Math.PI) diff -= Math.PI*2;
+      while(diff < -Math.PI) diff += Math.PI*2;
+      h.a += diff * .55;
+      h.flat = Math.min(1, h.flat + .12);
+      changed = true;
+    }
+  });
+  if(changed){
+    AE.brushSpeed(dist);
+    addScore(0); /* 刷毛不加分，纯玩 */
+    if(Math.random() < .3) drawBrush();
+  }
+  lastPt = {x, y};
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>bc.addEventListener(ev, ()=>lastPt=null));
+initBrush();
+
+/* ================================================================
+   CAN 09 废话收音机
+   ================================================================ */
+const radioLines = [
+  "你什么都不做的时候，其实也在休息。",
+  "今天也是没有变成更好的人的一天，恭喜。",
+  "咸鱼翻身之后，还是咸鱼。但另一面挺凉的，舒服。",
+  "月亮也在加班，但它从不抱怨。因为它没有嘴。",
+  "发呆不是浪费电，是大脑在做保洁。",
+  "你不必每天都有意义。有的日子就是用来路过的。",
+  "水开的时候会咕嘟，人累的时候也会咕嘟，都正常。",
+  "这个世界破破烂烂，罐头缝缝补补。",
+  "石头躺了一亿年，没人说它懒。",
+  "云从来不努力，也飘得挺好。",
+  "今天的风很温柔，但它对你一无所知，这样就很好。",
+  "睡不着的话，就当给明天存了点清醒。",
+  "你已经很好了。真的，罐头作证。",
+  "没有人规定一朵花必须开成什么样。包括你这朵。",
+  "电风扇一直摇头，是因为它也觉得没意思。",
+  "吃饱了就躺下，是猫的大智慧，你可以学。",
+  "「以后再说」其实是一种时间管理。",
+  "慢一点没关系，反正终点也没有奖牌在等。",
+  "你不是懒，你只是把电量省着用。",
+  "罐头没有 KPI。你在这里也不用有。",
+  "快乐的事很小，小到别人看不见。没关系，你看见就行。",
+  "就算今天什么都没干，你也不欠这个世界的。",
+  "雨下它的，你下你的（班）。",
+  "别人的进度条和你无关。你的进度条，想拉多慢拉多慢。",
+  "深呼吸一下。好点了吗？没有也行。",
+  "本厂规定：可以无聊，但不许因为无聊而觉得自己糟糕。",
+  "世界是个草台班子，你摆烂一下不亏。",
+  "泡面要等三分钟，快乐要等一下下，都会到的。",
+  "你不需要在罐头里表现很好。",
+  "睡前原谅一切。醒了……醒了再说吧。",
+  "烦恼就像泡泡纸，捏一个，少一个。",
+  "今天先到这，明天的事交给明天的你加班想。"
+];
+let radioIdx = -1;
+$("#radioKnob").addEventListener("click", function(){
+  AE.click(); vibrateSafe(8);
+  let next;
+  do{ next = Math.floor(Math.random()*radioLines.length); } while(next === radioIdx && radioLines.length > 1);
+  radioIdx = next;
+  const screen = $("#radioScreen");
+  screen.style.opacity = 0;
+  setTimeout(()=>{
+    screen.textContent = radioLines[radioIdx];
+    screen.style.transition = "opacity .5s";
+    screen.style.opacity = 1;
+  }, 120);
+  this.style.transform = "rotate(" + (180 + S.radios*47) + "deg)";
+  S.radios++; save();
+  $("#radioCount").textContent = "已收听 " + S.radios + " 句";
+  addScore(1);
+  if(S.radios === 20) toast("📻 成就解锁【废话十级学者】：你已经听完 20 句废话，达到可毕业水平。", 3200);
+});
+
+/* ================================================================
+   成就系统
+   ================================================================ */
+const BADGES = [
+  {id:"merit",   em:"🪵", nm:"功德圆满",   ds:"敲满 100 下木鱼",      ok:()=>S.merit>=100},
+  {id:"pop",     em:"🫧", nm:"指尖清洁工", ds:"捏爆 100 个泡泡",      ok:()=>S.pops>=100},
+  {id:"stone",   em:"🪨", nm:"石头之交",   ds:"摸石头 100 次",        ok:()=>S.pets>=100},
+  {id:"rain",    em:"🌧️", nm:"观雨员",    ds:"擦掉 50 滴雨",         ok:()=>S.wipes>=50},
+  {id:"poke",    em:"👉", nm:"毅力惊人",   ds:"把「戳这里」戳穿",     ok:()=>S.pokes>=8},
+  {id:"noodle",  em:"🍜", nm:"干饭魂",     ds:"在网页里吃完一碗面",   ok:()=>S.noodles>=1},
+  {id:"ride",    em:"🚗", nm:"永远的五岁", ds:"摇摇车坐满 3 次",      ok:()=>S.rides>=3},
+  {id:"radio",   em:"📻", nm:"废话学者",   ds:"听完 20 句废话",       ok:()=>S.radios>=20},
+  {id:"zen",     em:"🥫", nm:"开罐器",     ds:"解锁以上全部成就",     ok:()=>["merit","pop","stone","rain","poke","noodle","ride","radio"].every(x=>S.badges.includes(x))}
+];
+function renderBadges(){
+  const g = $("#badgeGrid");
+  g.innerHTML = "";
+  BADGES.forEach(b=>{
+    const on = S.badges.includes(b.id);
+    const el = document.createElement("div");
+    el.className = "badge" + (on ? " on" : "");
+    el.innerHTML = '<span class="em">' + b.em + '</span><div class="nm">' + b.nm + '</div><div class="ds">' + b.ds + '</div>';
+    g.appendChild(el);
+  });
+  $("#trophyBar").style.width = Math.round(S.badges.length / BADGES.length * 100) + "%";
+}
+function checkBadges(){
+  let newly = false;
+  BADGES.forEach(b=>{
+    if(!S.badges.includes(b.id) && b.ok()){
+      S.badges.push(b.id); newly = true;
+      setTimeout(()=>toast(b.em + " 成就解锁【" + b.nm + "】", 2800), 400);
+    }
+  });
+  if(newly){ save(); renderBadges(); }
+}
+renderBadges();
+checkBadges();
+
+/* 阻止双击缩放 */
+let lastTouchEnd = 0;
+document.addEventListener("touchend", e=>{
+  const now = Date.now();
+  if(now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, {passive:false});
+
+/* 尺寸变化 */
+addEventListener("resize", ()=>{ initRain(); initBrush(); });
+$("#scoreNum").textContent = S.score;
+</script>
+</body>
+</html>
